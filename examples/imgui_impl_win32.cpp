@@ -141,7 +141,7 @@ static bool ImGui_ImplWin32_UpdateMouseCursor()
     return true;
 }
 
-static void ImGui_ImplWin32_UpdateMousePos()
+static void ImGui_ImplWin32_UpdateMousePos(bool is_window_compat)
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -156,8 +156,9 @@ static void ImGui_ImplWin32_UpdateMousePos()
     // Set mouse position
     io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
     POINT pos;
-    if (HWND active_window = ::GetForegroundWindow())
-        if (active_window == g_hWnd || ::IsChild(active_window, g_hWnd))
+    HWND active_window = ::GetForegroundWindow();
+    if (is_window_compat || active_window != NULL)
+        if (is_window_compat || active_window == g_hWnd || ::IsChild(active_window, g_hWnd))
             if (::GetCursorPos(&pos) && ::ScreenToClient(g_hWnd, &pos))
                 io.MousePos = ImVec2((float)pos.x, (float)pos.y);
 }
@@ -211,7 +212,7 @@ static void ImGui_ImplWin32_UpdateGamepads()
 #endif // #ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
 }
 
-void    ImGui_ImplWin32_NewFrame()
+void    ImGui_ImplWin32_NewFrame(bool is_window_compat)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
@@ -235,7 +236,7 @@ void    ImGui_ImplWin32_NewFrame()
     // io.KeysDown[], io.MousePos, io.MouseDown[], io.MouseWheel: filled by the WndProc handler below.
 
     // Update OS mouse position
-    ImGui_ImplWin32_UpdateMousePos();
+    ImGui_ImplWin32_UpdateMousePos(is_window_compat);
 
     // Update OS mouse cursor with the cursor requested by imgui
     ImGuiMouseCursor mouse_cursor = io.MouseDrawCursor ? ImGuiMouseCursor_None : ImGui::GetMouseCursor();
