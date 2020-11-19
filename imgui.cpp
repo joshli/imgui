@@ -2748,16 +2748,28 @@ void ImGui::RenderTextEllipsis(ImDrawList* draw_list, const ImVec2& pos_min, con
 }
 
 // Render a rectangle shaped with optional rounding and borders
-void ImGui::RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool border, float rounding)
+void ImGui::RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool border, float rounding, bool circular)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
-    window->DrawList->AddRectFilled(p_min, p_max, fill_col, rounding);
-    const float border_size = g.Style.FrameBorderSize;
+    circular = true;
+    if (circular) {
+        window->DrawList->AddCircleFilled(ImVec2((p_min.x + p_max.x) / 2, (p_max.y + p_min.y) / 2), (p_max.y - p_min.y) / 2, fill_col, 64);
+    } else {
+        window->DrawList->AddRectFilled(p_min, p_max, fill_col, rounding);
+    }
+
+    float border_size = g.Style.FrameBorderSize;
     if (border && border_size > 0.0f)
     {
-        window->DrawList->AddRect(p_min+ImVec2(1,1), p_max+ImVec2(1,1), GetColorU32(ImGuiCol_BorderShadow), rounding, ImDrawCornerFlags_All, border_size);
-        window->DrawList->AddRect(p_min, p_max, GetColorU32(ImGuiCol_Border), rounding, ImDrawCornerFlags_All, border_size);
+        if (circular) {
+            ImVec2 center = ImVec2((p_min.x + p_max.x) / 2, (p_max.y + p_min.y) / 2);
+            window->DrawList->AddCircle(center + ImVec2(1, 1), (p_max.y - p_min.y) / 2, GetColorU32(ImGuiCol_BorderShadow), 64, border_size);
+            window->DrawList->AddCircle(center, (p_max.y - p_min.y) / 2, GetColorU32(ImGuiCol_Border), 64, border_size);
+        } else {
+            window->DrawList->AddRect(p_min + ImVec2(1, 1), p_max + ImVec2(1, 1), GetColorU32(ImGuiCol_BorderShadow), rounding, ImDrawCornerFlags_All, border_size);
+            window->DrawList->AddRect(p_min, p_max, GetColorU32(ImGuiCol_Border), rounding, ImDrawCornerFlags_All, border_size);
+        }
     }
 }
 
