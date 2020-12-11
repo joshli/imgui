@@ -2752,7 +2752,6 @@ void ImGui::RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool border,
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
-    circular = true;
     if (circular) {
         window->DrawList->AddCircleFilled(ImVec2((p_min.x + p_max.x) / 2, (p_max.y + p_min.y) / 2), (p_max.y - p_min.y) / 2, fill_col, 64);
     } else {
