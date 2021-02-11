@@ -983,7 +983,7 @@ void ImDrawList::PathBezierCurveTo(const ImVec2& p2, const ImVec2& p3, const ImV
     }
 }
 
-void ImDrawList::PathRect(const ImVec2& a, const ImVec2& b, float rounding, ImDrawCornerFlags rounding_corners)
+void ImDrawList::PathRect(const ImVec2& a, const ImVec2& b, float rounding, ImDrawCornerFlags rounding_corners, bool fast)
 {
     rounding = ImMin(rounding, ImFabs(b.x - a.x) * ( ((rounding_corners & ImDrawCornerFlags_Top)  == ImDrawCornerFlags_Top)  || ((rounding_corners & ImDrawCornerFlags_Bot)   == ImDrawCornerFlags_Bot)   ? 0.5f : 1.0f ) - 1.0f);
     rounding = ImMin(rounding, ImFabs(b.y - a.y) * ( ((rounding_corners & ImDrawCornerFlags_Left) == ImDrawCornerFlags_Left) || ((rounding_corners & ImDrawCornerFlags_Right) == ImDrawCornerFlags_Right) ? 0.5f : 1.0f ) - 1.0f);
@@ -1001,10 +1001,23 @@ void ImDrawList::PathRect(const ImVec2& a, const ImVec2& b, float rounding, ImDr
         const float rounding_tr = (rounding_corners & ImDrawCornerFlags_TopRight) ? rounding : 0.0f;
         const float rounding_br = (rounding_corners & ImDrawCornerFlags_BotRight) ? rounding : 0.0f;
         const float rounding_bl = (rounding_corners & ImDrawCornerFlags_BotLeft) ? rounding : 0.0f;
-        PathArcToFast(ImVec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 6, 9);
-        PathArcToFast(ImVec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 9, 12);
-        PathArcToFast(ImVec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, 3);
-        PathArcToFast(ImVec2(a.x + rounding_bl, b.y - rounding_bl), rounding_bl, 3, 6);
+        if (fast)
+        {
+            PathArcToFast(ImVec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 6, 9);
+            PathArcToFast(ImVec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 9, 12);
+            PathArcToFast(ImVec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, 3);
+            PathArcToFast(ImVec2(a.x + rounding_bl, b.y - rounding_bl), rounding_bl, 3, 6);
+        }
+        else
+        {
+            // copied from AddCircle
+            const float a_max = (IM_PI * 2.0f) * ((float)40 - 1.0f) / (float)40;
+            const float a_quarter = a_max / 4;
+            PathArcTo(ImVec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 2 * a_quarter, 3 * a_quarter, 39);
+            PathArcTo(ImVec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 3 * a_quarter, a_max, 39);
+            PathArcTo(ImVec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, a_quarter, 39);
+            PathArcTo(ImVec2(a.x + rounding_bl, b.y - rounding_bl), rounding_bl, a_quarter, 2 * a_quarter, 39);
+        }
     }
 }
 
@@ -1036,7 +1049,7 @@ void ImDrawList::AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 c
         return;
     if (rounding > 0.0f)
     {
-        PathRect(p_min, p_max, rounding, rounding_corners);
+        PathRect(p_min, p_max, rounding, rounding_corners, rounding <= 20);
         PathFillConvex(col);
     }
     else
