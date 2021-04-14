@@ -1298,7 +1298,7 @@ void ImDrawList::AddImageRounded(ImTextureID user_texture_id, const ImVec2& p_mi
         PushTextureID(user_texture_id);
 
     int vert_start_idx = VtxBuffer.Size;
-    PathRect(p_min, p_max, rounding, rounding_corners);
+    PathRect(p_min, p_max, rounding, rounding_corners, rounding <= 20);
     PathFillConvex(col);
     int vert_end_idx = VtxBuffer.Size;
     ImGui::ShadeVertsLinearUV(this, vert_start_idx, vert_end_idx, p_min, p_max, uv_min, uv_max, true);
