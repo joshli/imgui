@@ -1013,10 +1013,11 @@ void ImDrawList::PathRect(const ImVec2& a, const ImVec2& b, float rounding, ImDr
             // copied from AddCircle
             const float a_max = IM_PI * 2.0f;
             const float a_quarter = a_max / 4;
-            PathArcTo(ImVec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 2 * a_quarter, 3 * a_quarter, 7);
-            PathArcTo(ImVec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 3 * a_quarter, a_max, 7);
-            PathArcTo(ImVec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, a_quarter, 7);
-            PathArcTo(ImVec2(a.x + rounding_bl, b.y - rounding_bl), rounding_bl, a_quarter, 2 * a_quarter, 7);
+            const int num_segments = (int)(rounding / 6);
+            PathArcTo(ImVec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 2 * a_quarter, 3 * a_quarter, num_segments);
+            PathArcTo(ImVec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 3 * a_quarter, a_max, num_segments);
+            PathArcTo(ImVec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, a_quarter, num_segments);
+            PathArcTo(ImVec2(a.x + rounding_bl, b.y - rounding_bl), rounding_bl, a_quarter, 2 * a_quarter, num_segments);
         }
     }
 }
